@@ -1,9 +1,6 @@
-%{?scl:%scl_package objectweb-asm}
-%{!?scl:%global pkg_name %{name}}
-
-Name:           %{?scl_prefix}objectweb-asm
+Name:           objectweb-asm
 Version:        5.1
-Release:        4%{?dist}
+Release:        5%{?dist}
 Summary:        Java bytecode manipulation and analysis framework
 License:        BSD
 URL:            http://asm.ow2.org/
@@ -14,12 +11,8 @@ Source1:        http://www.apache.org/licenses/LICENSE-2.0.txt
 
 BuildRequires:  ant
 BuildRequires:  aqute-bnd
-BuildRequires:  maven-local
+BuildRequires:  javapackages-local
 BuildRequires:  objectweb-pom
-%{?scl:Requires: %scl_runtime}
-
-Obsoletes:      %{?scl_prefix}objectweb-asm4 < 5
-Provides:       %{?scl_prefix}objectweb-asm4 = %{version}-%{release}
 
 %description
 ASM is an all purpose Java bytecode manipulation and analysis
@@ -29,7 +22,7 @@ transformations and analysis algorithms allow to easily assemble
 custom complex transformations and code analysis tools.
 
 %package        javadoc
-Summary:        API documentation for %{pkg_name}
+Summary:        API documentation for %{name}
 
 %description    javadoc
 This package provides %{summary}.
@@ -47,26 +40,28 @@ sed -i -e '/kind="lib"/d' -e 's|output/eclipse|output/build|' .classpath
 %ant -Dobjectweb.ant.tasks.path= jar jdoc
 
 %install
-%{?scl:scl enable %{scl} - <<"EOF"}
 %mvn_artifact output/dist/lib/asm-parent-%{version}.pom
 for m in asm asm-analysis asm-commons asm-tree asm-util asm-xml all/asm-all all/asm-debug-all; do
     %mvn_artifact output/dist/lib/${m}-%{version}.pom \
                   output/dist/lib/${m}-%{version}.jar
 done
 %mvn_install -J output/dist/doc/javadoc/user
-%{?scl:EOF}
 
-%jpackage_script org.objectweb.asm.xml.Processor "" "" %{pkg_name}/asm:%{pkg_name}/asm-attrs:%{pkg_name}/asm-util:%{pkg_name}/asm-xml %{pkg_name}-processor true
+%jpackage_script org.objectweb.asm.xml.Processor "" "" %{name}/asm:%{name}/asm-attrs:%{name}/asm-util:%{name}/asm-xml %{name}-processor true
 
 %files -f .mfiles
-%doc LICENSE.txt README.txt
-%{_bindir}/%{pkg_name}-processor
-%dir %{_javadir}/%{pkg_name}
+%license LICENSE.txt
+%doc README.txt
+%{_bindir}/%{name}-processor
 
 %files javadoc -f .mfiles-javadoc
-%doc LICENSE.txt
+%license LICENSE.txt
 
 %changelog
+* Sat Sep 24 2016 Mikolaj Izdebski <mizdebsk@redhat.com> - 5.1-5
+- Update to current packaging guidelines
+- Remove obsoletes and provides for objectweb-asm4
+
 * Wed Jun 15 2016 Mikolaj Izdebski <mizdebsk@redhat.com> - 5.1-4
 - Add missing build-requires
 
