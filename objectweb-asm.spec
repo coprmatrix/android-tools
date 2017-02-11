@@ -1,6 +1,6 @@
 Name:           objectweb-asm
 Version:        5.1
-Release:        6%{?dist}
+Release:        7%{?dist}
 Summary:        Java bytecode manipulation and analysis framework
 License:        BSD
 URL:            http://asm.ow2.org/
@@ -58,6 +58,9 @@ done
 %license LICENSE.txt
 
 %changelog
+* Sat Feb 11 2017 Fedora Release Engineering <releng@fedoraproject.org> - 5.1-7
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_26_Mass_Rebuild
+
 * Mon Oct 10 2016 Mikolaj Izdebski <mizdebsk@redhat.com> - 5.1-6
 - Use OSGi API JARs to run BND classpath, instead of Eclipse
 
