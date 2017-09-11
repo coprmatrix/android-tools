@@ -1,12 +1,12 @@
 Name:           objectweb-asm
-Version:        5.1
-Release:        8%{?dist}
+Version:        6.0
+Release:        0.1.beta%{?dist}
 Summary:        Java bytecode manipulation and analysis framework
 License:        BSD
 URL:            http://asm.ow2.org/
 BuildArch:      noarch
 
-Source0:        http://download.forge.ow2.org/asm/asm-%{version}.tar.gz
+Source0:        http://download.forge.ow2.org/asm/asm-%{version}_BETA.tar.gz
 Source1:        http://www.apache.org/licenses/LICENSE-2.0.txt
 
 BuildRequires:  ant
@@ -28,7 +28,7 @@ Summary:        API documentation for %{name}
 This package provides %{summary}.
 
 %prep
-%setup -q -n asm-%{version}
+%setup -q -n asm-%{version}_BETA
 find -name *.jar -delete
 
 sed -i /Class-Path/d archive/*.bnd
@@ -37,13 +37,13 @@ sed -i "s|\${config}/biz.aQute.bnd.jar|`build-classpath aqute-bnd slf4j/api slf4
 sed -i -e '/kind="lib"/d' -e 's|output/eclipse|output/build|' .classpath
 
 %build
-%ant -Dobjectweb.ant.tasks.path= jar jdoc
+%ant -Dobjectweb.ant.tasks.path= -Dbiz.aQute.bnd.path= jar jdoc
 
 %install
-%mvn_artifact output/dist/lib/asm-parent-%{version}.pom
+%mvn_artifact output/dist/lib/asm-parent-%{version}_BETA.pom
 for m in asm asm-analysis asm-commons asm-tree asm-util asm-xml all/asm-all all/asm-debug-all; do
-    %mvn_artifact output/dist/lib/${m}-%{version}.pom \
-                  output/dist/lib/${m}-%{version}.jar
+    %mvn_artifact output/dist/lib/${m}-%{version}_BETA.pom \
+                  output/dist/lib/${m}-%{version}_BETA.jar
 done
 %mvn_install -J output/dist/doc/javadoc/user
 
@@ -58,6 +58,9 @@ done
 %license LICENSE.txt
 
 %changelog
+* Mon Sep 11 2017 Mikolaj Izdebski <mizdebsk@redhat.com> - 6.0-0.1.beta
+- Update to upstream version 6.0 beta
+
 * Thu Jul 27 2017 Fedora Release Engineering <releng@fedoraproject.org> - 5.1-8
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_27_Mass_Rebuild
 
