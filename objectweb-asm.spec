@@ -1,6 +1,6 @@
 Name:           objectweb-asm
 Version:        6.0
-Release:        0.1.beta%{?dist}
+Release:        0.2.beta%{?dist}
 Summary:        Java bytecode manipulation and analysis framework
 License:        BSD
 URL:            http://asm.ow2.org/
@@ -36,6 +36,9 @@ sed -i "s/Import-Package:/&org.objectweb.asm,org.objectweb.asm.util,/" archive/a
 sed -i "s|\${config}/biz.aQute.bnd.jar|`build-classpath aqute-bnd slf4j/api slf4j/simple osgi-core osgi-compendium`|" archive/*.xml
 sed -i -e '/kind="lib"/d' -e 's|output/eclipse|output/build|' .classpath
 
+# XXX dirty fix for https://bugzilla.redhat.com/show_bug.cgi?id=1490817
+sed -i '/version=/s/${product.artifact}/%{version}.0.BETA/g' archive/*.bnd
+
 %build
 %ant -Dobjectweb.ant.tasks.path= -Dbiz.aQute.bnd.path= jar jdoc
 
@@ -58,6 +61,10 @@ done
 %license LICENSE.txt
 
 %changelog
+* Tue Sep 12 2017 Mikolaj Izdebski <mizdebsk@redhat.com> - 6.0-0.2.beta
+- Fix invalid OSGi metadata
+- Resolves: rhbz#1490817
+
 * Mon Sep 11 2017 Mikolaj Izdebski <mizdebsk@redhat.com> - 6.0-0.1.beta
 - Update to upstream version 6.0 beta
 
