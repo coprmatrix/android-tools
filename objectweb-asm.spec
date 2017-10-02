@@ -1,13 +1,17 @@
 Name:           objectweb-asm
 Version:        6.0
-Release:        0.2.beta%{?dist}
+Release:        1%{?dist}
 Summary:        Java bytecode manipulation and analysis framework
 License:        BSD
 URL:            http://asm.ow2.org/
 BuildArch:      noarch
 
-Source0:        http://download.forge.ow2.org/asm/asm-%{version}_BETA.tar.gz
+Source0:        http://download.forge.ow2.org/asm/asm-%{version}.tar.gz
 Source1:        http://www.apache.org/licenses/LICENSE-2.0.txt
+
+# Temporarily reintroduces asm-all uberjar, will be removed when we have time
+# to fix dependent packages
+Patch1:         0001-Revert-removal-of-asm-all.patch
 
 BuildRequires:  ant
 BuildRequires:  aqute-bnd
@@ -28,7 +32,10 @@ Summary:        API documentation for %{name}
 This package provides %{summary}.
 
 %prep
-%setup -q -n asm-%{version}_BETA
+%setup -q -n asm-%{version}
+
+%patch1 -p1
+
 find -name *.jar -delete
 
 sed -i /Class-Path/d archive/*.bnd
@@ -36,17 +43,14 @@ sed -i "s/Import-Package:/&org.objectweb.asm,org.objectweb.asm.util,/" archive/a
 sed -i "s|\${config}/biz.aQute.bnd.jar|`build-classpath aqute-bnd slf4j/api slf4j/simple osgi-core osgi-compendium`|" archive/*.xml
 sed -i -e '/kind="lib"/d' -e 's|output/eclipse|output/build|' .classpath
 
-# XXX dirty fix for https://bugzilla.redhat.com/show_bug.cgi?id=1490817
-sed -i '/version=/s/${product.artifact}/%{version}.0.BETA/g' archive/*.bnd
-
 %build
 %ant -Dobjectweb.ant.tasks.path= -Dbiz.aQute.bnd.path= jar jdoc
 
 %install
-%mvn_artifact output/dist/lib/asm-parent-%{version}_BETA.pom
-for m in asm asm-analysis asm-commons asm-tree asm-util asm-xml all/asm-all all/asm-debug-all; do
-    %mvn_artifact output/dist/lib/${m}-%{version}_BETA.pom \
-                  output/dist/lib/${m}-%{version}_BETA.jar
+%mvn_artifact output/dist/lib/asm-parent-%{version}.pom
+for m in asm asm-analysis asm-commons asm-tree asm-util asm-xml asm-all asm-debug-all; do
+    %mvn_artifact output/dist/lib/${m}-%{version}.pom \
+                  output/dist/lib/${m}-%{version}.jar
 done
 %mvn_install -J output/dist/doc/javadoc/user
 
@@ -61,6 +65,9 @@ done
 %license LICENSE.txt
 
 %changelog
+* Mon Sep 25 2017 Michael Simacek <msimacek@redhat.com> - 6.0-1
+- Update to upstream version 6.0
+
 * Tue Sep 12 2017 Mikolaj Izdebski <mizdebsk@redhat.com> - 6.0-0.2.beta
 - Fix invalid OSGi metadata
 - Resolves: rhbz#1490817
