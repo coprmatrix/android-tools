@@ -1,8 +1,10 @@
 %global gittag ASM_6_1_1
 
+%bcond_without junit5
+
 Name:           objectweb-asm
 Version:        6.1.1
-Release:        1%{?dist}
+Release:        2%{?dist}
 Summary:        Java bytecode manipulation and analysis framework
 License:        BSD
 URL:            http://asm.ow2.org/
@@ -24,12 +26,14 @@ Source9:        asm-all-%{version}.pom
 BuildRequires:  maven-local
 BuildRequires:  mvn(org.apache.felix:maven-bundle-plugin)
 BuildRequires:  mvn(org.apache.maven.plugins:maven-shade-plugin)
+BuildRequires:  mvn(org.ow2:ow2:pom:)
+%if %{with junit5}
 BuildRequires:  mvn(org.codehaus.janino:janino)
 BuildRequires:  mvn(org.junit.jupiter:junit-jupiter-api)
 BuildRequires:  mvn(org.junit.jupiter:junit-jupiter-engine)
 BuildRequires:  mvn(org.junit.jupiter:junit-jupiter-params)
 BuildRequires:  mvn(org.junit.platform:junit-platform-surefire-provider)
-BuildRequires:  mvn(org.ow2:ow2:pom:)
+%endif
 
 %description
 ASM is an all purpose Java bytecode manipulation and analysis
@@ -53,10 +57,15 @@ rm -rf gradle/
 # A custom parent pom to aggregate the build
 cp -p %{SOURCE1} pom.xml
 
+%if %{without junit5}
+%pom_disable_module asm-test
+%endif
+
 # Insert poms into modules
 for pom in asm asm-analysis asm-commons asm-test asm-tree asm-util asm-xml; do
   cp -p $RPM_SOURCE_DIR/${pom}-%{version}.pom $pom/pom.xml
   # Fix junit5 configuration
+%if %{with junit5}
   %pom_add_dep org.junit.jupiter:junit-jupiter-engine:5.1.0:test $pom
   %pom_add_plugin org.apache.maven.plugins:maven-surefire-plugin:2.21.0 $pom \
 "            <dependencies>
@@ -66,6 +75,7 @@ for pom in asm asm-analysis asm-commons asm-test asm-tree asm-util asm-xml; do
                     <version>1.2.0-RC1</version>
                 </dependency>
             </dependencies>"
+%endif
   if [ "$pom" != "asm-test" ] ; then
     # Make into OSGi bundles
     bsn="org.objectweb.${pom//-/.}"
@@ -106,7 +116,11 @@ javac -sourcepath ../../asm/src/main/java/ -cp $(build-classpath aqute-bnd) $(fi
 jar cf bnd-module-plugin.jar -C src/main/java org
 popd
 
+%if %{with junit5}
 %mvn_build -- -Dmaven.compiler.source=1.8 -Dmaven.compiler.target=1.8
+%else
+%mvn_build -f -- -Dmaven.compiler.source=1.8 -Dmaven.compiler.target=1.8
+%endif
 
 %install
 %mvn_install
@@ -121,6 +135,9 @@ popd
 %license LICENSE.txt
 
 %changelog
+* Thu Jun 28 2018 Mikolaj Izdebski <mizdebsk@redhat.com> - 6.1.1-2
+- Allow conditionally building without junit5
+
 * Wed Apr 25 2018 Mat Booth <mat.booth@redhat.com> - 6.1.1-1
 - Update to latest upstream relase for Java 10 support
 - Switch to maven build
