@@ -4,7 +4,7 @@
 
 Name:           objectweb-asm
 Version:        6.1.1
-Release:        2%{?dist}
+Release:        3%{?dist}
 Summary:        Java bytecode manipulation and analysis framework
 License:        BSD
 URL:            http://asm.ow2.org/
@@ -34,6 +34,11 @@ BuildRequires:  mvn(org.junit.jupiter:junit-jupiter-engine)
 BuildRequires:  mvn(org.junit.jupiter:junit-jupiter-params)
 BuildRequires:  mvn(org.junit.platform:junit-platform-surefire-provider)
 %endif
+
+# asm-all needs to be in pluginpath for BND.  If this self-dependency
+# becomes a problem then ASM core will have to be build from source
+# with javac before main maven build, just like bnd-module-plugin
+BuildRequires:  objectweb-asm >= 6.1.1
 
 %description
 ASM is an all purpose Java bytecode manipulation and analysis
@@ -87,7 +92,7 @@ for pom in asm asm-analysis asm-commons asm-test asm-tree asm-util asm-xml; do
         <Bundle-SymbolicName>$bsn</Bundle-SymbolicName>
         <Bundle-RequiredExecutionEnvironment>JavaSE-1.8</Bundle-RequiredExecutionEnvironment>
         <_removeheaders>Bnd-LastModified,Build-By,Created-By,Include-Resource,Require-Capability,Tool</_removeheaders>
-        <_pluginpath>$(pwd)/tools/bnd-module-plugin/bnd-module-plugin.jar</_pluginpath>
+        <_pluginpath>$(pwd)/tools/bnd-module-plugin/bnd-module-plugin.jar, $(find-jar objectweb-asm/asm-all)</_pluginpath>
         <_plugin>org.objectweb.asm.tools.ModuleInfoBndPlugin;</_plugin>
       </instructions>
     </configuration>"
@@ -135,6 +140,9 @@ popd
 %license LICENSE.txt
 
 %changelog
+* Fri Jun 29 2018 Mikolaj Izdebski <mizdebsk@redhat.com> - 6.1.1-3
+- Add objectweb-asm to BND pluginpath
+
 * Thu Jun 28 2018 Mikolaj Izdebski <mizdebsk@redhat.com> - 6.1.1-2
 - Allow conditionally building without junit5
 
