@@ -1,16 +1,16 @@
-%global gittag ASM_6_1_1
+%global gittag ASM_6_2
 
 %bcond_without junit5
 
 Name:           objectweb-asm
-Version:        6.1.1
-Release:        4%{?dist}
+Version:        6.2
+Release:        1%{?dist}
 Summary:        Java bytecode manipulation and analysis framework
 License:        BSD
 URL:            http://asm.ow2.org/
 BuildArch:      noarch
 
-Source0:        https://gitlab.ow2.org/asm/asm/repository/%{gittag}/archive.tar.gz
+Source0:        https://gitlab.ow2.org/asm/asm/repository/%{gittag}/archive.tar.gz#/%{name}-%{version}.tar.gz
 Source1:        parent.pom
 Source2:        http://repo1.maven.org/maven2/org/ow2/asm/asm/%{version}/asm-%{version}.pom
 Source3:        http://repo1.maven.org/maven2/org/ow2/asm/asm-analysis/%{version}/asm-analysis-%{version}.pom
@@ -21,7 +21,7 @@ Source7:        http://repo1.maven.org/maven2/org/ow2/asm/asm-util/%{version}/as
 Source8:        http://repo1.maven.org/maven2/org/ow2/asm/asm-xml/%{version}/asm-xml-%{version}.pom
 # We still want to create an "all" uberjar, so this is a custom pom to generate it
 # TODO: Fix other packages to no longer depend on "asm-all" so we can drop this
-Source9:        asm-all-%{version}.pom
+Source9:        asm-all.pom
 
 BuildRequires:  maven-local
 BuildRequires:  mvn(org.apache.felix:maven-bundle-plugin)
@@ -54,7 +54,7 @@ Summary:        API documentation for %{name}
 This package provides %{summary}.
 
 %prep
-%setup -q -n asm-%{gittag}-11b3cabce9b90706cf91a47dd15215c667f8055b
+%setup -q -n asm-%{gittag}-c72a86bd5f48a308537695213d3a23ac35a57d55
 
 find -name *.jar -delete
 rm -rf gradle/
@@ -101,7 +101,7 @@ done
 
 # Insert asm-all pom
 mkdir -p asm-all
-cp -p %{SOURCE9} asm-all/pom.xml
+sed 's/@VERSION@/%{version}/g' %{SOURCE9} > asm-all/pom.xml
 
 # Remove invalid self-dependency
 %pom_remove_dep org.ow2.asm:asm-test asm-test
@@ -140,6 +140,9 @@ popd
 %license LICENSE.txt
 
 %changelog
+* Mon Jul 02 2018 Michael Simacek <msimacek@redhat.com> - 6.2-1
+- Update to upstream version 6.2
+
 * Sat Jun 30 2018 Mikolaj Izdebski <mizdebsk@redhat.com> - 6.1.1-4
 - Relax versioned self-build-requirement a bit
 

@@ -3,6 +3,12 @@
 /.build-*.log
 /*.src.rpm
 /noarch
-/asm-*
 /archive.tar.gz
-/parent.pom
+/asm-6.2.pom
+/asm-analysis-6.2.pom
+/asm-commons-6.2.pom
+/asm-test-6.2.pom
+/asm-tree-6.2.pom
+/asm-util-6.2.pom
+/asm-xml-6.2.pom
+/objectweb-asm-6.2.tar.gz
