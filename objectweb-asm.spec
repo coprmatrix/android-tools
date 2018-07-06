@@ -1,10 +1,11 @@
 %global gittag ASM_6_2
 
 %bcond_without junit5
+%bcond_without osgi
 
 Name:           objectweb-asm
 Version:        6.2
-Release:        2%{?dist}
+Release:        3%{?dist}
 Summary:        Java bytecode manipulation and analysis framework
 License:        BSD
 URL:            http://asm.ow2.org/
@@ -35,10 +36,12 @@ BuildRequires:  mvn(org.junit.jupiter:junit-jupiter-params)
 BuildRequires:  mvn(org.junit.platform:junit-platform-surefire-provider)
 %endif
 
+%if %{with osgi}
 # asm-all needs to be in pluginpath for BND.  If this self-dependency
 # becomes a problem then ASM core will have to be build from source
 # with javac before main maven build, just like bnd-module-plugin
 BuildRequires:  objectweb-asm >= 6
+%endif
 
 %description
 ASM is an all purpose Java bytecode manipulation and analysis
@@ -81,6 +84,7 @@ for pom in asm asm-analysis asm-commons asm-test asm-tree asm-util asm-xml; do
                 </dependency>
             </dependencies>"
 %endif
+%if %{with osgi}
   if [ "$pom" != "asm-test" ] ; then
     # Make into OSGi bundles
     bsn="org.objectweb.${pom//-/.}"
@@ -97,6 +101,7 @@ for pom in asm asm-analysis asm-commons asm-test asm-tree asm-util asm-xml; do
       </instructions>
     </configuration>"
   fi
+%endif
 done
 
 # Insert asm-all pom
@@ -140,6 +145,10 @@ popd
 %license LICENSE.txt
 
 %changelog
+* Wed Aug 01 2018 Severin Gehwolf <sgehwolf@redhat.com> - 6.2-3
+- Allow conditionally building without OSGi
+  metadata.
+
 * Fri Jul 13 2018 Fedora Release Engineering <releng@fedoraproject.org> - 6.2-2
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_29_Mass_Rebuild
 
