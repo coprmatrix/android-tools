@@ -5,7 +5,7 @@
 
 Name:           objectweb-asm
 Version:        6.2
-Release:        3%{?dist}
+Release:        4%{?dist}
 Summary:        Java bytecode manipulation and analysis framework
 License:        BSD
 URL:            http://asm.ow2.org/
@@ -42,6 +42,10 @@ BuildRequires:  mvn(org.junit.platform:junit-platform-surefire-provider)
 # with javac before main maven build, just like bnd-module-plugin
 BuildRequires:  objectweb-asm >= 6
 %endif
+
+# Explicit javapackages-tools requires since asm-processor script uses
+# /usr/share/java-utils/java-functions
+Requires:       javapackages-tools
 
 %description
 ASM is an all purpose Java bytecode manipulation and analysis
@@ -145,6 +149,10 @@ popd
 %license LICENSE.txt
 
 %changelog
+* Wed Aug 01 2018 Severin Gehwolf <sgehwolf@redhat.com> - 6.2-4
+- Explicitly require javapackages-tools for asm-processor script
+  which uses java-functions.
+
 * Wed Aug 01 2018 Severin Gehwolf <sgehwolf@redhat.com> - 6.2-3
 - Allow conditionally building without OSGi
   metadata.
