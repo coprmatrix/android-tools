@@ -1,17 +1,16 @@
-%global gittag ASM_6_2
-
 %bcond_without junit5
 %bcond_without osgi
 
 Name:           objectweb-asm
 Version:        6.2
-Release:        4%{?dist}
+Release:        5%{?dist}
 Summary:        Java bytecode manipulation and analysis framework
 License:        BSD
 URL:            http://asm.ow2.org/
 BuildArch:      noarch
 
-Source0:        https://gitlab.ow2.org/asm/asm/repository/%{gittag}/archive.tar.gz#/%{name}-%{version}.tar.gz
+# ./generate-tarball.sh
+Source0:        %{name}-%{version}.tar.gz
 Source1:        parent.pom
 Source2:        http://repo1.maven.org/maven2/org/ow2/asm/asm/%{version}/asm-%{version}.pom
 Source3:        http://repo1.maven.org/maven2/org/ow2/asm/asm-analysis/%{version}/asm-analysis-%{version}.pom
@@ -23,6 +22,8 @@ Source8:        http://repo1.maven.org/maven2/org/ow2/asm/asm-xml/%{version}/asm
 # We still want to create an "all" uberjar, so this is a custom pom to generate it
 # TODO: Fix other packages to no longer depend on "asm-all" so we can drop this
 Source9:        asm-all.pom
+# The source contains binary jars that cannot be verified for licensing and could be proprietary
+Source10:       generate-tarball.sh
 
 BuildRequires:  maven-local
 BuildRequires:  mvn(org.apache.felix:maven-bundle-plugin)
@@ -61,10 +62,7 @@ Summary:        API documentation for %{name}
 This package provides %{summary}.
 
 %prep
-%setup -q -n asm-%{gittag}-c72a86bd5f48a308537695213d3a23ac35a57d55
-
-find -name *.jar -delete
-rm -rf gradle/
+%setup -q
 
 # A custom parent pom to aggregate the build
 cp -p %{SOURCE1} pom.xml
@@ -149,6 +147,9 @@ popd
 %license LICENSE.txt
 
 %changelog
+* Fri Aug 03 2018 Michael Simacek <msimacek@redhat.com> - 6.2-5
+- Repack the tarball without binaries
+
 * Wed Aug 01 2018 Severin Gehwolf <sgehwolf@redhat.com> - 6.2-4
 - Explicitly require javapackages-tools for asm-processor script
   which uses java-functions.
