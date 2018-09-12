@@ -17,8 +17,10 @@ tar xf "../${name}-${version}.orig.tar.gz"
 mv asm-${gittag}-* ${name}-${version}
 
 # CLEAN TARBALL
+# Remove all jar files
 find -name '*.jar' -delete
-find -name '*.class' -delete
+# Remove all class files except those in asm-test, which are shipped alongside appropriately licensed source
+find */asm{,-analysis,-commons} -name '*.class' -delete
 rm -r */gradle
 
 tar cf "../${name}-${version}.tar.gz" *

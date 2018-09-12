@@ -2,8 +2,8 @@
 %bcond_without osgi
 
 Name:           objectweb-asm
-Version:        6.2
-Release:        5%{?dist}
+Version:        6.2.1
+Release:        1%{?dist}
 Summary:        Java bytecode manipulation and analysis framework
 License:        BSD
 URL:            http://asm.ow2.org/
@@ -34,7 +34,7 @@ BuildRequires:  mvn(org.codehaus.janino:janino)
 BuildRequires:  mvn(org.junit.jupiter:junit-jupiter-api)
 BuildRequires:  mvn(org.junit.jupiter:junit-jupiter-engine)
 BuildRequires:  mvn(org.junit.jupiter:junit-jupiter-params)
-BuildRequires:  mvn(org.junit.platform:junit-platform-surefire-provider)
+BuildRequires:  mvn(org.apache.maven.surefire:surefire-junit-platform)
 %endif
 
 %if %{with osgi}
@@ -77,14 +77,7 @@ for pom in asm asm-analysis asm-commons asm-test asm-tree asm-util asm-xml; do
   # Fix junit5 configuration
 %if %{with junit5}
   %pom_add_dep org.junit.jupiter:junit-jupiter-engine:5.1.0:test $pom
-  %pom_add_plugin org.apache.maven.plugins:maven-surefire-plugin:2.21.0 $pom \
-"            <dependencies>
-                <dependency>
-                    <groupId>org.junit.platform</groupId>
-                    <artifactId>junit-platform-surefire-provider</artifactId>
-                    <version>1.2.0-RC1</version>
-                </dependency>
-            </dependencies>"
+  %pom_add_plugin org.apache.maven.plugins:maven-surefire-plugin:2.22.0 $pom
 %endif
 %if %{with osgi}
   if [ "$pom" != "asm-test" ] ; then
@@ -105,6 +98,14 @@ for pom in asm asm-analysis asm-commons asm-test asm-tree asm-util asm-xml; do
   fi
 %endif
 done
+
+# Disable tests that use unlicensed class files
+sed -i -e '/testReadAndWriteWithComputeMaxsAndLargeSubroutines/i@org.junit.jupiter.api.Disabled("missing class file")' \
+  asm/src/test/java/org/objectweb/asm/ClassWriterTest.java
+sed -i -e '/testMergeWithJsrReachableFromTwoDifferentPaths/i@org.junit.jupiter.api.Disabled("missing class file")' \
+  asm-analysis/src/test/java/org/objectweb/asm/tree/analysis/BasicInterpreterTest.java
+sed -i -e '/testSortLocalVariablesAndInstantiate()/i@org.junit.jupiter.api.Disabled("missing class file")' \
+  asm-commons/src/test/java/org/objectweb/asm/commons/LocalVariablesSorterTest.java
 
 # Insert asm-all pom
 mkdir -p asm-all
@@ -147,6 +148,10 @@ popd
 %license LICENSE.txt
 
 %changelog
+* Tue Sep 11 2018 Mat Booth <mat.booth@redhat.com> - 6.2.1-1
+- Update to latest upstream release
+- Fix test suite execution
+
 * Fri Aug 03 2018 Michael Simacek <msimacek@redhat.com> - 6.2-5
 - Repack the tarball without binaries
 
