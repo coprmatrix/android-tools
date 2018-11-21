@@ -2,7 +2,7 @@
 %bcond_without osgi
 
 Name:           objectweb-asm
-Version:        6.2.1
+Version:        7.0
 Release:        1%{?dist}
 Summary:        Java bytecode manipulation and analysis framework
 License:        BSD
@@ -18,12 +18,11 @@ Source4:        http://repo1.maven.org/maven2/org/ow2/asm/asm-commons/%{version}
 Source5:        http://repo1.maven.org/maven2/org/ow2/asm/asm-test/%{version}/asm-test-%{version}.pom
 Source6:        http://repo1.maven.org/maven2/org/ow2/asm/asm-tree/%{version}/asm-tree-%{version}.pom
 Source7:        http://repo1.maven.org/maven2/org/ow2/asm/asm-util/%{version}/asm-util-%{version}.pom
-Source8:        http://repo1.maven.org/maven2/org/ow2/asm/asm-xml/%{version}/asm-xml-%{version}.pom
 # We still want to create an "all" uberjar, so this is a custom pom to generate it
 # TODO: Fix other packages to no longer depend on "asm-all" so we can drop this
-Source9:        asm-all.pom
+Source8:        asm-all.pom
 # The source contains binary jars that cannot be verified for licensing and could be proprietary
-Source10:       generate-tarball.sh
+Source9:       generate-tarball.sh
 
 BuildRequires:  maven-local
 BuildRequires:  mvn(org.apache.felix:maven-bundle-plugin)
@@ -72,7 +71,7 @@ cp -p %{SOURCE1} pom.xml
 %endif
 
 # Insert poms into modules
-for pom in asm asm-analysis asm-commons asm-test asm-tree asm-util asm-xml; do
+for pom in asm asm-analysis asm-commons asm-test asm-tree asm-util; do
   cp -p $RPM_SOURCE_DIR/${pom}-%{version}.pom $pom/pom.xml
   # Fix junit5 configuration
 %if %{with junit5}
@@ -109,7 +108,7 @@ sed -i -e '/testSortLocalVariablesAndInstantiate()/i@org.junit.jupiter.api.Disab
 
 # Insert asm-all pom
 mkdir -p asm-all
-sed 's/@VERSION@/%{version}/g' %{SOURCE9} > asm-all/pom.xml
+sed 's/@VERSION@/%{version}/g' %{SOURCE8} > asm-all/pom.xml
 
 # Remove invalid self-dependency
 %pom_remove_dep org.ow2.asm:asm-test asm-test
@@ -138,7 +137,7 @@ popd
 %install
 %mvn_install
 
-%jpackage_script org.objectweb.asm.xml.Processor "" "" %{name}/asm:%{name}/asm-attrs:%{name}/asm-util:%{name}/asm-xml %{name}-processor true
+%jpackage_script org.objectweb.asm.xml.Processor "" "" %{name}/asm:%{name}/asm-attrs:%{name}/asm-util %{name}-processor true
 
 %files -f .mfiles
 %license LICENSE.txt
@@ -148,6 +147,10 @@ popd
 %license LICENSE.txt
 
 %changelog
+* Wed Nov 21 2018 Severin Gehwolf <sgehwolf@redhat.com> - 7.0-1
+- Update to latest upstream 7.0 release.
+- Removes package asm-xml (deprecated since 6.1).
+
 * Tue Sep 11 2018 Mat Booth <mat.booth@redhat.com> - 6.2.1-1
 - Update to latest upstream release
 - Fix test suite execution

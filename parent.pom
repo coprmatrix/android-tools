@@ -16,7 +16,6 @@
       <module>asm-test</module>
       <module>asm-tree</module>
       <module>asm-util</module>
-      <module>asm-xml</module>
       <module>asm-all</module>
     </modules>
 </project>
