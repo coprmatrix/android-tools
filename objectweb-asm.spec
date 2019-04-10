@@ -1,5 +1,3 @@
-%bcond_without junit5
-%bcond_without osgi
 
 Name:           objectweb-asm
 Version:        7.0
@@ -28,20 +26,11 @@ BuildRequires:  maven-local
 BuildRequires:  mvn(org.apache.felix:maven-bundle-plugin)
 BuildRequires:  mvn(org.apache.maven.plugins:maven-shade-plugin)
 BuildRequires:  mvn(org.ow2:ow2:pom:)
-%if %{with junit5}
-BuildRequires:  mvn(org.codehaus.janino:janino)
-BuildRequires:  mvn(org.junit.jupiter:junit-jupiter-api)
-BuildRequires:  mvn(org.junit.jupiter:junit-jupiter-engine)
-BuildRequires:  mvn(org.junit.jupiter:junit-jupiter-params)
-BuildRequires:  mvn(org.apache.maven.surefire:surefire-junit-platform)
-%endif
 
-%if %{with osgi}
 # asm-all needs to be in pluginpath for BND.  If this self-dependency
 # becomes a problem then ASM core will have to be build from source
 # with javac before main maven build, just like bnd-module-plugin
 BuildRequires:  objectweb-asm >= 6
-%endif
 
 # Explicit javapackages-tools requires since asm-processor script uses
 # /usr/share/java-utils/java-functions
@@ -66,19 +55,12 @@ This package provides %{summary}.
 # A custom parent pom to aggregate the build
 cp -p %{SOURCE1} pom.xml
 
-%if %{without junit5}
 %pom_disable_module asm-test
-%endif
 
 # Insert poms into modules
 for pom in asm asm-analysis asm-commons asm-test asm-tree asm-util; do
   cp -p $RPM_SOURCE_DIR/${pom}-%{version}.pom $pom/pom.xml
   # Fix junit5 configuration
-%if %{with junit5}
-  %pom_add_dep org.junit.jupiter:junit-jupiter-engine:5.1.0:test $pom
-  %pom_add_plugin org.apache.maven.plugins:maven-surefire-plugin:2.22.0 $pom
-%endif
-%if %{with osgi}
   if [ "$pom" != "asm-test" ] ; then
     # Make into OSGi bundles
     bsn="org.objectweb.${pom//-/.}"
@@ -95,7 +77,6 @@ for pom in asm asm-analysis asm-commons asm-test asm-tree asm-util; do
       </instructions>
     </configuration>"
   fi
-%endif
 done
 
 # Disable tests that use unlicensed class files
@@ -128,11 +109,7 @@ javac -sourcepath ../../asm/src/main/java/ -cp $(build-classpath aqute-bnd) $(fi
 jar cf bnd-module-plugin.jar -C src/main/java org
 popd
 
-%if %{with junit5}
-%mvn_build -- -Dmaven.compiler.source=1.8 -Dmaven.compiler.target=1.8
-%else
 %mvn_build -f -- -Dmaven.compiler.source=1.8 -Dmaven.compiler.target=1.8
-%endif
 
 %install
 %mvn_install
