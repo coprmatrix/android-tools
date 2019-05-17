@@ -1,6 +1,6 @@
 
 Name:           objectweb-asm
-Version:        7.0
+Version:        7.1
 Release:        1%{?dist}
 Summary:        Java bytecode manipulation and analysis framework
 License:        BSD
@@ -80,12 +80,24 @@ for pom in asm asm-analysis asm-commons asm-test asm-tree asm-util; do
 done
 
 # Disable tests that use unlicensed class files
-sed -i -e '/testReadAndWriteWithComputeMaxsAndLargeSubroutines/i@org.junit.jupiter.api.Disabled("missing class file")' \
+sed -i -e '/testToByteArray_computeMaxs_largeSubroutines/i@org.junit.jupiter.api.Disabled("missing class file")' \
   asm/src/test/java/org/objectweb/asm/ClassWriterTest.java
-sed -i -e '/testMergeWithJsrReachableFromTwoDifferentPaths/i@org.junit.jupiter.api.Disabled("missing class file")' \
-  asm-analysis/src/test/java/org/objectweb/asm/tree/analysis/BasicInterpreterTest.java
+sed -i -e '/testAnalyze_mergeWithJsrReachableFromTwoDifferentPaths/i@org.junit.jupiter.api.Disabled("missing class file")' \
+  asm-analysis/src/test/java/org/objectweb/asm/tree/analysis/AnalyzerWithBasicInterpreterTest.java
 sed -i -e '/testSortLocalVariablesAndInstantiate()/i@org.junit.jupiter.api.Disabled("missing class file")' \
   asm-commons/src/test/java/org/objectweb/asm/commons/LocalVariablesSorterTest.java
+sed -i -e '/testAllMethods_issue317586/i@org.junit.jupiter.api.Disabled("missing class file")' \
+  asm-commons/src/test/java/org/objectweb/asm/commons/LocalVariablesSorterTest.java
+sed -i -e '/testAllMethods_anonymousInnerClass/i@org.junit.jupiter.api.Disabled("missing class file")' \
+  asm-commons/src/test/java/org/objectweb/asm/commons/SerialVersionUidAdderTest.java
+sed -i -e '/testAllMethods_emptyInterface/i@org.junit.jupiter.api.Disabled("missing class file")' \
+  asm-commons/src/test/java/org/objectweb/asm/commons/SerialVersionUidAdderTest.java
+sed -i -e '/testAllMethods_enum/i@org.junit.jupiter.api.Disabled("missing class file")' \
+  asm-commons/src/test/java/org/objectweb/asm/commons/SerialVersionUidAdderTest.java
+sed -i -e '/testAllMethods_class/i@org.junit.jupiter.api.Disabled("missing class file")' \
+  asm-commons/src/test/java/org/objectweb/asm/commons/SerialVersionUidAdderTest.java
+sed -i -e '/testAllMethods_interface/i@org.junit.jupiter.api.Disabled("missing class file")' \
+  asm-commons/src/test/java/org/objectweb/asm/commons/SerialVersionUidAdderTest.java
 
 # Insert asm-all pom
 mkdir -p asm-all
@@ -124,6 +136,12 @@ popd
 %license LICENSE.txt
 
 %changelog
+* Mon May 06 2019 Severin Gehwolf <sgehwolf@redhat.com> - 7.1-1
+- Update to latest upstream 7.1 release.
+
+* Fri Feb 01 2019 Fedora Release Engineering <releng@fedoraproject.org> - 7.0-2
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_30_Mass_Rebuild
+
 * Wed Nov 21 2018 Severin Gehwolf <sgehwolf@redhat.com> - 7.0-1
 - Update to latest upstream 7.0 release.
 - Removes package asm-xml (deprecated since 6.1).
