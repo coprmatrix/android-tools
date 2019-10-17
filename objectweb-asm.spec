@@ -1,7 +1,6 @@
-
 Name:           objectweb-asm
-Version:        7.1
-Release:        2%{?dist}
+Version:        7.2
+Release:        1%{?dist}
 Summary:        Java bytecode manipulation and analysis framework
 License:        BSD
 URL:            http://asm.ow2.org/
@@ -136,6 +135,9 @@ popd
 %license LICENSE.txt
 
 %changelog
+* Thu Oct 17 2019 Marian Koncek <mkoncek@redhat.com> - 7.2-1
+- Update to upstream version 7.2
+
 * Fri May 24 2019 Mikolaj Izdebski <mizdebsk@redhat.com> - 7.1-2
 - Mass rebuild for javapackages-tools 201901
 
