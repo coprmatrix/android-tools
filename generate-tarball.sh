@@ -10,7 +10,7 @@ wget "https://gitlab.ow2.org/asm/asm/repository/${gittag}/archive.tar.gz#/${name
 
 rm -rf tarball-tmp
 mkdir tarball-tmp
-cd tarball-tmp
+pushd tarball-tmp
 tar xf "../${name}-${version}.orig.tar.gz"
 
 # Rename dir not to contain commit
@@ -23,6 +23,6 @@ find -name '*.jar' -delete
 find */asm{,-analysis,-commons} -name '*.class' -delete
 rm -r */gradle
 
-tar cf "../${name}-${version}.tar.gz" *
-cd ..
+tar -czf "../${name}-${version}.tar.gz" *
+popd
 rm -r tarball-tmp "${name}-${version}.orig.tar.gz"
