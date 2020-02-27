@@ -2,8 +2,8 @@
 %bcond_without osgi
 
 Name:           objectweb-asm
-Version:        7.0
-Release:        4%{?dist}
+Version:        7.3.1
+Release:        1%{?dist}
 Summary:        Java bytecode manipulation and analysis framework
 License:        BSD
 URL:            http://asm.ow2.org/
@@ -12,12 +12,12 @@ BuildArch:      noarch
 # ./generate-tarball.sh
 Source0:        %{name}-%{version}.tar.gz
 Source1:        parent.pom
-Source2:        http://repo1.maven.org/maven2/org/ow2/asm/asm/%{version}/asm-%{version}.pom
-Source3:        http://repo1.maven.org/maven2/org/ow2/asm/asm-analysis/%{version}/asm-analysis-%{version}.pom
-Source4:        http://repo1.maven.org/maven2/org/ow2/asm/asm-commons/%{version}/asm-commons-%{version}.pom
-Source5:        http://repo1.maven.org/maven2/org/ow2/asm/asm-test/%{version}/asm-test-%{version}.pom
-Source6:        http://repo1.maven.org/maven2/org/ow2/asm/asm-tree/%{version}/asm-tree-%{version}.pom
-Source7:        http://repo1.maven.org/maven2/org/ow2/asm/asm-util/%{version}/asm-util-%{version}.pom
+Source2:        https://repo1.maven.org/maven2/org/ow2/asm/asm/%{version}/asm-%{version}.pom
+Source3:        https://repo1.maven.org/maven2/org/ow2/asm/asm-analysis/%{version}/asm-analysis-%{version}.pom
+Source4:        https://repo1.maven.org/maven2/org/ow2/asm/asm-commons/%{version}/asm-commons-%{version}.pom
+Source5:        https://repo1.maven.org/maven2/org/ow2/asm/asm-test/%{version}/asm-test-%{version}.pom
+Source6:        https://repo1.maven.org/maven2/org/ow2/asm/asm-tree/%{version}/asm-tree-%{version}.pom
+Source7:        https://repo1.maven.org/maven2/org/ow2/asm/asm-util/%{version}/asm-util-%{version}.pom
 # We still want to create an "all" uberjar, so this is a custom pom to generate it
 # TODO: Fix other packages to no longer depend on "asm-all" so we can drop this
 Source8:        asm-all.pom
@@ -99,12 +99,15 @@ for pom in asm asm-analysis asm-commons asm-test asm-tree asm-util; do
 done
 
 # Disable tests that use unlicensed class files
-sed -i -e '/testReadAndWriteWithComputeMaxsAndLargeSubroutines/i@org.junit.jupiter.api.Disabled("missing class file")' \
+sed -i -e '/testToByteArray_computeMaxs_largeSubroutines/i@org.junit.jupiter.api.Disabled("missing class file")' \
   asm/src/test/java/org/objectweb/asm/ClassWriterTest.java
-sed -i -e '/testMergeWithJsrReachableFromTwoDifferentPaths/i@org.junit.jupiter.api.Disabled("missing class file")' \
-  asm-analysis/src/test/java/org/objectweb/asm/tree/analysis/BasicInterpreterTest.java
-sed -i -e '/testSortLocalVariablesAndInstantiate()/i@org.junit.jupiter.api.Disabled("missing class file")' \
+sed -i -e '/testAnalyze_mergeWithJsrReachableFromTwoDifferentPaths/i@org.junit.jupiter.api.Disabled("missing class file")' \
+  asm-analysis/src/test/java/org/objectweb/asm/tree/analysis/AnalyzerWithBasicInterpreterTest.java
+sed -i -e '/testAllMethods_issue317586()/i@org.junit.jupiter.api.Disabled("missing class file")' \
   asm-commons/src/test/java/org/objectweb/asm/commons/LocalVariablesSorterTest.java
+
+# Remove failing test SerialVersionUidAdderTest due to missing class files
+rm asm-commons/src/test/java/org/objectweb/asm/commons/SerialVersionUidAdderTest.java
 
 # Insert asm-all pom
 mkdir -p asm-all
@@ -147,6 +150,9 @@ popd
 %license LICENSE.txt
 
 %changelog
+* Thu Feb 27 2020 Jayashree Huttanagoudat <jhuttana@redhat.com> - 7.3.1-1
+- Upgraded to upstream version 7.3.1.
+
 * Wed Jan 29 2020 Fedora Release Engineering <releng@fedoraproject.org> - 7.0-4
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_32_Mass_Rebuild
 
