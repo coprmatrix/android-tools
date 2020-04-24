@@ -116,7 +116,7 @@ sed 's/@VERSION@/%{version}/g' %{SOURCE8} > asm-all/pom.xml
 %build
 # Must compile bnd plugin first, which is used to generate Java 9 module-info.class files
 pushd tools/bnd-module-plugin
-javac -sourcepath ../../asm/src/main/java/ -cp $(build-classpath aqute-bnd) $(find -name *.java)
+javac -sourcepath ../../asm/src/main/java/ -cp $(build-classpath biz.aQute.bnd:biz.aQute.bndlib biz.aQute.bnd:aQute.libg) $(find -name *.java)
 jar cf bnd-module-plugin.jar -C src/main/java org
 popd
 
