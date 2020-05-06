@@ -3,7 +3,7 @@
 
 Name:           objectweb-asm
 Version:        7.3.1
-Release:        1%{?dist}
+Release:        2%{?dist}
 Summary:        Java bytecode manipulation and analysis framework
 License:        BSD
 URL:            http://asm.ow2.org/
@@ -23,6 +23,10 @@ Source7:        https://repo1.maven.org/maven2/org/ow2/asm/asm-util/%{version}/a
 Source8:        asm-all.pom
 # The source contains binary jars that cannot be verified for licensing and could be proprietary
 Source9:       generate-tarball.sh
+
+# Revert upstream change https://gitlab.ow2.org/asm/asm/-/commit/2a58bc9bcf2ea6eee03e973d1df4cf9312573c9d
+# To restore some deprecations that were deleted and broke the API
+Patch0: 0001-Revert-upstream-change-2a58bc9.patch
 
 BuildRequires:  maven-local
 BuildRequires:  mvn(org.apache.felix:maven-bundle-plugin)
@@ -62,6 +66,8 @@ This package provides %{summary}.
 
 %prep
 %setup -q
+
+%patch0 -p1
 
 # A custom parent pom to aggregate the build
 cp -p %{SOURCE1} pom.xml
@@ -150,6 +156,9 @@ popd
 %license LICENSE.txt
 
 %changelog
+* Wed May 06 2020 Mat Booth <mat.booth@redhat.com> - 7.3.1-2
+- Revert an upstream change to prevent breaking API change
+
 * Thu Feb 27 2020 Jayashree Huttanagoudat <jhuttana@redhat.com> - 7.3.1-1
 - Upgraded to upstream version 7.3.1.
 
