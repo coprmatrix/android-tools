@@ -15,21 +15,10 @@ Source4:        https://repo1.maven.org/maven2/org/ow2/asm/asm-commons/%{version
 Source5:        https://repo1.maven.org/maven2/org/ow2/asm/asm-test/%{version}/asm-test-%{version}.pom
 Source6:        https://repo1.maven.org/maven2/org/ow2/asm/asm-tree/%{version}/asm-tree-%{version}.pom
 Source7:        https://repo1.maven.org/maven2/org/ow2/asm/asm-util/%{version}/asm-util-%{version}.pom
-# We still want to create an "all" uberjar, so this is a custom pom to generate it
-# TODO: Fix other packages to no longer depend on "asm-all" so we can drop this
-Source8:        asm-all.pom
 # The source contains binary jars that cannot be verified for licensing and could be proprietary
 Source9:       generate-tarball.sh
 
 BuildRequires:  maven-local
-BuildRequires:  mvn(org.apache.felix:maven-bundle-plugin)
-BuildRequires:  mvn(org.apache.maven.plugins:maven-shade-plugin)
-BuildRequires:  mvn(org.ow2:ow2:pom:)
-
-# asm-all needs to be in pluginpath for BND.  If this self-dependency
-# becomes a problem then ASM core will have to be build from source
-# with javac before main maven build, just like bnd-module-plugin
-BuildRequires:  objectweb-asm >= 6
 
 # Explicit javapackages-tools requires since asm-processor script uses
 # /usr/share/java-utils/java-functions
@@ -54,28 +43,10 @@ This package provides %{summary}.
 # A custom parent pom to aggregate the build
 cp -p %{SOURCE1} pom.xml
 
-%pom_disable_module asm-test
-
 # Insert poms into modules
 for pom in asm asm-analysis asm-commons asm-test asm-tree asm-util; do
   cp -p $RPM_SOURCE_DIR/${pom}-%{version}.pom $pom/pom.xml
-  # Fix junit5 configuration
-  if [ "$pom" != "asm-test" ] ; then
-    # Make into OSGi bundles
-    bsn="org.objectweb.${pom//-/.}"
-    %pom_xpath_inject pom:project "<packaging>bundle</packaging>" $pom
-    %pom_add_plugin org.apache.felix:maven-bundle-plugin:3.5.0 $pom \
-"   <extensions>true</extensions>
-    <configuration>
-      <instructions>
-        <Bundle-SymbolicName>$bsn</Bundle-SymbolicName>
-        <Bundle-RequiredExecutionEnvironment>JavaSE-1.8</Bundle-RequiredExecutionEnvironment>
-        <_removeheaders>Bnd-LastModified,Build-By,Created-By,Include-Resource,Require-Capability,Tool</_removeheaders>
-        <_pluginpath>$(pwd)/tools/bnd-module-plugin/bnd-module-plugin.jar, $(find-jar objectweb-asm/asm-all)</_pluginpath>
-        <_plugin>org.objectweb.asm.tools.ModuleInfoBndPlugin;</_plugin>
-      </instructions>
-    </configuration>"
-  fi
+  %pom_remove_parent $pom
 done
 
 # Disable tests that use unlicensed class files
@@ -98,15 +69,8 @@ sed -i -e '/testAllMethods_class/i@org.junit.jupiter.api.Disabled("missing class
 sed -i -e '/testAllMethods_interface/i@org.junit.jupiter.api.Disabled("missing class file")' \
   asm-commons/src/test/java/org/objectweb/asm/commons/SerialVersionUidAdderTest.java
 
-# Insert asm-all pom
-mkdir -p asm-all
-sed 's/@VERSION@/%{version}/g' %{SOURCE8} > asm-all/pom.xml
-
 # Remove invalid self-dependency
 %pom_remove_dep org.ow2.asm:asm-test asm-test
-
-# Compat aliases
-%mvn_alias :asm-all org.ow2.asm:asm-debug-all
 
 # No need to ship the custom parent pom
 %mvn_package :asm-aggregator __noinstall
@@ -115,10 +79,10 @@ sed 's/@VERSION@/%{version}/g' %{SOURCE8} > asm-all/pom.xml
 
 %build
 # Must compile bnd plugin first, which is used to generate Java 9 module-info.class files
-pushd tools/bnd-module-plugin
-javac -sourcepath ../../asm/src/main/java/ -cp $(build-classpath biz.aQute.bnd:biz.aQute.bndlib biz.aQute.bnd:aQute.libg) $(find -name *.java)
-jar cf bnd-module-plugin.jar -C src/main/java org
-popd
+#pushd tools/bnd-module-plugin
+#javac -sourcepath ../../asm/src/main/java/ -cp $(build-classpath biz.aQute.bnd:biz.aQute.bndlib biz.aQute.bnd:aQute.libg) $(find -name *.java)
+#jar cf bnd-module-plugin.jar -C src/main/java org
+#popd
 
 %mvn_build -f -- -Dmaven.compiler.source=1.8 -Dmaven.compiler.target=1.8
 
