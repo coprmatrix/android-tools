@@ -1,9 +1,9 @@
 Name:           objectweb-asm
-Version:        7.3.1
+Version:        8.0.1
 Release:        1%{?dist}
 Summary:        Java bytecode manipulation and analysis framework
 License:        BSD
-URL:            http://asm.ow2.org/
+URL:            https://asm.ow2.org/
 BuildArch:      noarch
 
 # ./generate-tarball.sh
@@ -16,7 +16,7 @@ Source5:        https://repo1.maven.org/maven2/org/ow2/asm/asm-test/%{version}/a
 Source6:        https://repo1.maven.org/maven2/org/ow2/asm/asm-tree/%{version}/asm-tree-%{version}.pom
 Source7:        https://repo1.maven.org/maven2/org/ow2/asm/asm-util/%{version}/asm-util-%{version}.pom
 # The source contains binary jars that cannot be verified for licensing and could be proprietary
-Source9:       generate-tarball.sh
+Source9:        generate-tarball.sh
 
 BuildRequires:  maven-local
 
@@ -99,6 +99,9 @@ sed -i -e '/testAllMethods_interface/i@org.junit.jupiter.api.Disabled("missing c
 %license LICENSE.txt
 
 %changelog
+* Mon Jun 22 2020 Marian Koncek <mkoncek@redhat.com> - 8.0.1-1
+- Update to upstream version 8.0.1
+
 * Tue Jan 21 2020 Marian Koncek <mkoncek@redhat.com> - 7.3.1-1
 - Update to upstream version 7.3.1
 
