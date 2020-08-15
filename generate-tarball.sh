@@ -23,6 +23,6 @@ find -name '*.jar' -delete
 find */asm{,-analysis,-commons} -name '*.class' -delete
 rm -r */gradle
 
-tar cf "../${name}-${version}.tar.gz" *
+tar cf "../${name}-${version}.tar.gz" -I 'gzip -9' *
 cd ..
 rm -r tarball-tmp "${name}-${version}.orig.tar.gz"

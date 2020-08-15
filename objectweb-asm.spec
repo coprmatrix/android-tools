@@ -2,8 +2,8 @@
 %bcond_without osgi
 
 Name:           objectweb-asm
-Version:        7.3.1
-Release:        4%{?dist}
+Version:        8.0.1
+Release:        1%{?dist}
 Summary:        Java bytecode manipulation and analysis framework
 License:        BSD
 URL:            http://asm.ow2.org/
@@ -27,6 +27,11 @@ Source9:       generate-tarball.sh
 # Revert upstream change https://gitlab.ow2.org/asm/asm/-/commit/2a58bc9bcf2ea6eee03e973d1df4cf9312573c9d
 # To restore some deprecations that were deleted and broke the API
 Patch0: 0001-Revert-upstream-change-2a58bc9.patch
+
+# Move a statement that can throw a CompileException inside a try-catch block
+# for that exception.  Upstream has fixed this another way with a large code
+# refactor that seems inappropriate to backport.
+Patch1: 0002-Catch-CompileException-in-test.patch
 
 BuildRequires:  maven-local
 BuildRequires:  mvn(org.apache.felix:maven-bundle-plugin)
@@ -65,9 +70,7 @@ Summary:        API documentation for %{name}
 This package provides %{summary}.
 
 %prep
-%setup -q
-
-%patch0 -p1
+%autosetup -p1
 
 # A custom parent pom to aggregate the build
 cp -p %{SOURCE1} pom.xml
@@ -156,6 +159,11 @@ popd
 %license LICENSE.txt
 
 %changelog
+* Fri Aug 14 2020 Jerry James <loganjerry@gmail.com> - 8.0.1-1
+- Version 8.0.1
+- Add 0002-Catch-CompileException-in-test.patch to fix compilation of a test
+- Make generate-tarball.sh actually compress the tarball
+
 * Tue Jul 28 2020 Fedora Release Engineering <releng@fedoraproject.org> - 7.3.1-4
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_33_Mass_Rebuild
 
