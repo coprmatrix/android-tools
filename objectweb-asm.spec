@@ -1,5 +1,5 @@
 Name:           objectweb-asm
-Version:        8.0.1
+Version:        9.0
 Release:        1%{?dist}
 Summary:        Java bytecode manipulation and analysis framework
 License:        BSD
@@ -69,9 +69,6 @@ sed -i -e '/testAllMethods_class/i@org.junit.jupiter.api.Disabled("missing class
 sed -i -e '/testAllMethods_interface/i@org.junit.jupiter.api.Disabled("missing class file")' \
   asm-commons/src/test/java/org/objectweb/asm/commons/SerialVersionUidAdderTest.java
 
-# Remove invalid self-dependency
-%pom_remove_dep org.ow2.asm:asm-test asm-test
-
 # No need to ship the custom parent pom
 %mvn_package :asm-aggregator __noinstall
 # Don't ship the test framework to avoid runtime dep on junit
@@ -99,6 +96,9 @@ sed -i -e '/testAllMethods_interface/i@org.junit.jupiter.api.Disabled("missing c
 %license LICENSE.txt
 
 %changelog
+* Fri Sep 25 2020 Marian Koncek <mkoncek@redhat.com> - 9.0-1
+- Update to upstream version 9.0
+
 * Mon Jun 22 2020 Marian Koncek <mkoncek@redhat.com> - 8.0.1-1
 - Update to upstream version 8.0.1
 
