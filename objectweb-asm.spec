@@ -3,7 +3,7 @@
 
 Name:           objectweb-asm
 Version:        8.0.1
-Release:        1%{?dist}
+Release:        2%{?dist}
 Summary:        Java bytecode manipulation and analysis framework
 License:        BSD
 URL:            http://asm.ow2.org/
@@ -159,6 +159,9 @@ popd
 %license LICENSE.txt
 
 %changelog
+* Tue Jan 26 2021 Fedora Release Engineering <releng@fedoraproject.org> - 8.0.1-2
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_34_Mass_Rebuild
+
 * Fri Aug 14 2020 Jerry James <loganjerry@gmail.com> - 8.0.1-1
 - Version 8.0.1
 - Add 0002-Catch-CompileException-in-test.patch to fix compilation of a test
