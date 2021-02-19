@@ -2,8 +2,8 @@
 %bcond_without osgi
 
 Name:           objectweb-asm
-Version:        8.0.1
-Release:        2%{?dist}
+Version:        9.1
+Release:        1%{?dist}
 Summary:        Java bytecode manipulation and analysis framework
 License:        BSD
 URL:            http://asm.ow2.org/
@@ -24,20 +24,17 @@ Source8:        asm-all.pom
 # The source contains binary jars that cannot be verified for licensing and could be proprietary
 Source9:       generate-tarball.sh
 
-# Revert upstream change https://gitlab.ow2.org/asm/asm/-/commit/2a58bc9bcf2ea6eee03e973d1df4cf9312573c9d
-# To restore some deprecations that were deleted and broke the API
-Patch0: 0001-Revert-upstream-change-2a58bc9.patch
-
 # Move a statement that can throw a CompileException inside a try-catch block
 # for that exception.  Upstream has fixed this another way with a large code
 # refactor that seems inappropriate to backport.
-Patch1: 0002-Catch-CompileException-in-test.patch
+Patch1: 0001-Catch-CompileException-in-test.patch
 
 BuildRequires:  maven-local
 BuildRequires:  mvn(org.apache.felix:maven-bundle-plugin)
 BuildRequires:  mvn(org.apache.maven.plugins:maven-shade-plugin)
 BuildRequires:  mvn(org.ow2:ow2:pom:)
 %if %{with junit5}
+BuildRequires:  mvn(org.codehaus.janino:commons-compiler)
 BuildRequires:  mvn(org.codehaus.janino:janino)
 BuildRequires:  mvn(org.junit.jupiter:junit-jupiter-api)
 BuildRequires:  mvn(org.junit.jupiter:junit-jupiter-engine)
@@ -82,11 +79,6 @@ cp -p %{SOURCE1} pom.xml
 # Insert poms into modules
 for pom in asm asm-analysis asm-commons asm-test asm-tree asm-util; do
   cp -p $RPM_SOURCE_DIR/${pom}-%{version}.pom $pom/pom.xml
-  # Fix junit5 configuration
-%if %{with junit5}
-  %pom_add_dep org.junit.jupiter:junit-jupiter-engine:5.1.0:test $pom
-  %pom_add_plugin org.apache.maven.plugins:maven-surefire-plugin:2.22.0 $pom
-%endif
 %if %{with osgi}
   if [ "$pom" != "asm-test" ] ; then
     # Make into OSGi bundles
@@ -106,6 +98,16 @@ for pom in asm asm-analysis asm-commons asm-test asm-tree asm-util; do
   fi
 %endif
 done
+# Fix junit5 configuration
+%if %{with junit5}
+%pom_add_dep org.junit.jupiter:junit-jupiter-engine:5.7.0:test asm asm-analysis asm-commons asm-tree asm-util
+%pom_add_dep org.junit.jupiter:junit-jupiter-params:5.7.0:test asm asm-analysis asm-commons asm-tree asm-util
+%pom_add_plugin org.apache.maven.plugins:maven-surefire-plugin:2.22.0 asm asm-analysis asm-commons asm-test asm-tree asm-util
+%pom_add_dep org.ow2.asm:asm-test:%{version}:test asm asm-analysis asm-commons asm-tree asm-util
+%pom_add_dep org.ow2.asm:asm-util:%{version}:test asm-commons
+%pom_add_dep org.codehaus.janino:janino:2.7.8:test asm-util
+%pom_add_dep org.codehaus.janino:commons-compiler:2.7.8:test asm-util
+%endif
 
 # Disable tests that use unlicensed class files
 sed -i -e '/testToByteArray_computeMaxs_largeSubroutines/i@org.junit.jupiter.api.Disabled("missing class file")' \
@@ -121,9 +123,6 @@ rm asm-commons/src/test/java/org/objectweb/asm/commons/SerialVersionUidAdderTest
 # Insert asm-all pom
 mkdir -p asm-all
 sed 's/@VERSION@/%{version}/g' %{SOURCE8} > asm-all/pom.xml
-
-# Remove invalid self-dependency
-%pom_remove_dep org.ow2.asm:asm-test asm-test
 
 # Compat aliases
 %mvn_alias :asm-all org.ow2.asm:asm-debug-all
@@ -159,6 +158,9 @@ popd
 %license LICENSE.txt
 
 %changelog
+* Fri Feb 19 2021 Mat Booth <mat.booth@redhat.com> - 9.1-1
+- Update to latest upstream release
+
 * Tue Jan 26 2021 Fedora Release Engineering <releng@fedoraproject.org> - 8.0.1-2
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_34_Mass_Rebuild
 
