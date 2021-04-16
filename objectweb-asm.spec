@@ -1,3 +1,5 @@
+%bcond_without bootstrap
+
 Name:           objectweb-asm
 Version:        9.0
 Release:        1%{?dist}
@@ -19,6 +21,9 @@ Source7:        https://repo1.maven.org/maven2/org/ow2/asm/asm-util/%{version}/a
 Source9:        generate-tarball.sh
 
 BuildRequires:  maven-local
+%if %{with bootstrap}
+BuildRequires:  javapackages-bootstrap
+%endif
 
 # Explicit javapackages-tools requires since asm-processor script uses
 # /usr/share/java-utils/java-functions
