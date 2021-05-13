@@ -1,4 +1,4 @@
-%bcond_without bootstrap
+%bcond_with bootstrap
 
 Name:           objectweb-asm
 Version:        9.0
