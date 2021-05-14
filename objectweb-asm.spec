@@ -1,12 +1,11 @@
-%bcond_without junit5
-%bcond_without osgi
+%bcond_with bootstrap
 
 Name:           objectweb-asm
 Version:        9.1
 Release:        1%{?dist}
 Summary:        Java bytecode manipulation and analysis framework
 License:        BSD
-URL:            http://asm.ow2.org/
+URL:            https://asm.ow2.org/
 BuildArch:      noarch
 
 # ./generate-tarball.sh
@@ -18,35 +17,12 @@ Source4:        https://repo1.maven.org/maven2/org/ow2/asm/asm-commons/%{version
 Source5:        https://repo1.maven.org/maven2/org/ow2/asm/asm-test/%{version}/asm-test-%{version}.pom
 Source6:        https://repo1.maven.org/maven2/org/ow2/asm/asm-tree/%{version}/asm-tree-%{version}.pom
 Source7:        https://repo1.maven.org/maven2/org/ow2/asm/asm-util/%{version}/asm-util-%{version}.pom
-# We still want to create an "all" uberjar, so this is a custom pom to generate it
-# TODO: Fix other packages to no longer depend on "asm-all" so we can drop this
-Source8:        asm-all.pom
 # The source contains binary jars that cannot be verified for licensing and could be proprietary
-Source9:       generate-tarball.sh
-
-# Move a statement that can throw a CompileException inside a try-catch block
-# for that exception.  Upstream has fixed this another way with a large code
-# refactor that seems inappropriate to backport.
-Patch1: 0001-Catch-CompileException-in-test.patch
+Source9:        generate-tarball.sh
 
 BuildRequires:  maven-local
-BuildRequires:  mvn(org.apache.felix:maven-bundle-plugin)
-BuildRequires:  mvn(org.apache.maven.plugins:maven-shade-plugin)
-BuildRequires:  mvn(org.ow2:ow2:pom:)
-%if %{with junit5}
-BuildRequires:  mvn(org.codehaus.janino:commons-compiler)
-BuildRequires:  mvn(org.codehaus.janino:janino)
-BuildRequires:  mvn(org.junit.jupiter:junit-jupiter-api)
-BuildRequires:  mvn(org.junit.jupiter:junit-jupiter-engine)
-BuildRequires:  mvn(org.junit.jupiter:junit-jupiter-params)
-BuildRequires:  mvn(org.apache.maven.surefire:surefire-junit-platform)
-%endif
-
-%if %{with osgi}
-# asm-all needs to be in pluginpath for BND.  If this self-dependency
-# becomes a problem then ASM core will have to be build from source
-# with javac before main maven build, just like bnd-module-plugin
-BuildRequires:  objectweb-asm >= 6
+%if %{with bootstrap}
+BuildRequires:  javapackages-bootstrap
 %endif
 
 # Explicit javapackages-tools requires since asm-processor script uses
@@ -67,65 +43,16 @@ Summary:        API documentation for %{name}
 This package provides %{summary}.
 
 %prep
-%autosetup -p1
+%setup -q
 
 # A custom parent pom to aggregate the build
 cp -p %{SOURCE1} pom.xml
 
-%if %{without junit5}
-%pom_disable_module asm-test
-%endif
-
 # Insert poms into modules
 for pom in asm asm-analysis asm-commons asm-test asm-tree asm-util; do
   cp -p $RPM_SOURCE_DIR/${pom}-%{version}.pom $pom/pom.xml
-%if %{with osgi}
-  if [ "$pom" != "asm-test" ] ; then
-    # Make into OSGi bundles
-    bsn="org.objectweb.${pom//-/.}"
-    %pom_xpath_inject pom:project "<packaging>bundle</packaging>" $pom
-    %pom_add_plugin org.apache.felix:maven-bundle-plugin:3.5.0 $pom \
-"   <extensions>true</extensions>
-    <configuration>
-      <instructions>
-        <Bundle-SymbolicName>$bsn</Bundle-SymbolicName>
-        <Bundle-RequiredExecutionEnvironment>JavaSE-1.8</Bundle-RequiredExecutionEnvironment>
-        <_removeheaders>Bnd-LastModified,Build-By,Created-By,Include-Resource,Require-Capability,Tool</_removeheaders>
-        <_pluginpath>$(pwd)/tools/bnd-module-plugin/bnd-module-plugin.jar, $(find-jar objectweb-asm/asm-all)</_pluginpath>
-        <_plugin>org.objectweb.asm.tools.ModuleInfoBndPlugin;</_plugin>
-      </instructions>
-    </configuration>"
-  fi
-%endif
+  %pom_remove_parent $pom
 done
-# Fix junit5 configuration
-%if %{with junit5}
-%pom_add_dep org.junit.jupiter:junit-jupiter-engine:5.7.0:test asm asm-analysis asm-commons asm-tree asm-util
-%pom_add_dep org.junit.jupiter:junit-jupiter-params:5.7.0:test asm asm-analysis asm-commons asm-tree asm-util
-%pom_add_plugin org.apache.maven.plugins:maven-surefire-plugin:2.22.0 asm asm-analysis asm-commons asm-test asm-tree asm-util
-%pom_add_dep org.ow2.asm:asm-test:%{version}:test asm asm-analysis asm-commons asm-tree asm-util
-%pom_add_dep org.ow2.asm:asm-util:%{version}:test asm-commons
-%pom_add_dep org.codehaus.janino:janino:2.7.8:test asm-util
-%pom_add_dep org.codehaus.janino:commons-compiler:2.7.8:test asm-util
-%endif
-
-# Disable tests that use unlicensed class files
-sed -i -e '/testToByteArray_computeMaxs_largeSubroutines/i@org.junit.jupiter.api.Disabled("missing class file")' \
-  asm/src/test/java/org/objectweb/asm/ClassWriterTest.java
-sed -i -e '/testAnalyze_mergeWithJsrReachableFromTwoDifferentPaths/i@org.junit.jupiter.api.Disabled("missing class file")' \
-  asm-analysis/src/test/java/org/objectweb/asm/tree/analysis/AnalyzerWithBasicInterpreterTest.java
-sed -i -e '/testAllMethods_issue317586()/i@org.junit.jupiter.api.Disabled("missing class file")' \
-  asm-commons/src/test/java/org/objectweb/asm/commons/LocalVariablesSorterTest.java
-
-# Remove failing test SerialVersionUidAdderTest due to missing class files
-rm asm-commons/src/test/java/org/objectweb/asm/commons/SerialVersionUidAdderTest.java
-
-# Insert asm-all pom
-mkdir -p asm-all
-sed 's/@VERSION@/%{version}/g' %{SOURCE8} > asm-all/pom.xml
-
-# Compat aliases
-%mvn_alias :asm-all org.ow2.asm:asm-debug-all
 
 # No need to ship the custom parent pom
 %mvn_package :asm-aggregator __noinstall
@@ -133,17 +60,7 @@ sed 's/@VERSION@/%{version}/g' %{SOURCE8} > asm-all/pom.xml
 %mvn_package :asm-test __noinstall
 
 %build
-# Must compile bnd plugin first, which is used to generate Java 9 module-info.class files
-pushd tools/bnd-module-plugin
-javac -sourcepath ../../asm/src/main/java/ -cp $(build-classpath aqute-bnd) $(find -name *.java)
-jar cf bnd-module-plugin.jar -C src/main/java org
-popd
-
-%if %{with junit5}
-%mvn_build -- -Dmaven.compiler.source=1.8 -Dmaven.compiler.target=1.8
-%else
 %mvn_build -f -- -Dmaven.compiler.source=1.8 -Dmaven.compiler.target=1.8
-%endif
 
 %install
 %mvn_install
@@ -158,11 +75,17 @@ popd
 %license LICENSE.txt
 
 %changelog
+* Fri May 14 2021 Marian Koncek <mkoncek@redhat.com> - 9.1-1
+- Update to upstream version 9.1
+
 * Fri Feb 19 2021 Mat Booth <mat.booth@redhat.com> - 9.1-1
 - Update to latest upstream release
 
 * Tue Jan 26 2021 Fedora Release Engineering <releng@fedoraproject.org> - 8.0.1-2
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_34_Mass_Rebuild
+
+* Fri Sep 25 2020 Marian Koncek <mkoncek@redhat.com> - 9.0-1
+- Update to upstream version 9.0
 
 * Fri Aug 14 2020 Jerry James <loganjerry@gmail.com> - 8.0.1-1
 - Version 8.0.1
@@ -175,6 +98,9 @@ popd
 * Sat Jul 11 2020 Jiri Vanek <jvanek@redhat.com> - 7.3.1-3
 - Rebuilt for JDK-11, see https://fedoraproject.org/wiki/Changes/Java11
 
+* Mon Jun 22 2020 Marian Koncek <mkoncek@redhat.com> - 8.0.1-1
+- Update to upstream version 8.0.1
+
 * Wed May 06 2020 Mat Booth <mat.booth@redhat.com> - 7.3.1-2
 - Revert an upstream change to prevent breaking API change
 
@@ -184,8 +110,23 @@ popd
 * Wed Jan 29 2020 Fedora Release Engineering <releng@fedoraproject.org> - 7.0-4
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_32_Mass_Rebuild
 
+* Tue Jan 21 2020 Marian Koncek <mkoncek@redhat.com> - 7.3.1-1
+- Update to upstream version 7.3.1
+
+* Tue Nov 05 2019 Mikolaj Izdebski <mizdebsk@redhat.com> - 7.2-2
+- Mass rebuild for javapackages-tools 201902
+
+* Thu Oct 17 2019 Marian Koncek <mkoncek@redhat.com> - 7.2-1
+- Update to upstream version 7.2
+
 * Thu Jul 25 2019 Fedora Release Engineering <releng@fedoraproject.org> - 7.0-3
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_31_Mass_Rebuild
+
+* Fri May 24 2019 Mikolaj Izdebski <mizdebsk@redhat.com> - 7.1-2
+- Mass rebuild for javapackages-tools 201901
+
+* Mon May 06 2019 Severin Gehwolf <sgehwolf@redhat.com> - 7.1-1
+- Update to latest upstream 7.1 release.
 
 * Fri Feb 01 2019 Fedora Release Engineering <releng@fedoraproject.org> - 7.0-2
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_30_Mass_Rebuild
