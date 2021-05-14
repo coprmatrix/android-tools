@@ -1,7 +1,7 @@
 %bcond_with bootstrap
 
 Name:           objectweb-asm
-Version:        9.0
+Version:        9.1
 Release:        1%{?dist}
 Summary:        Java bytecode manipulation and analysis framework
 License:        BSD
@@ -101,6 +101,9 @@ sed -i -e '/testAllMethods_interface/i@org.junit.jupiter.api.Disabled("missing c
 %license LICENSE.txt
 
 %changelog
+* Fri May 14 2021 Marian Koncek <mkoncek@redhat.com> - 9.1-1
+- Update to upstream version 9.1
+
 * Fri Sep 25 2020 Marian Koncek <mkoncek@redhat.com> - 9.0-1
 - Update to upstream version 9.0
 
