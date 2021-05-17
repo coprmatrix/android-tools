@@ -1,4 +1,4 @@
-%bcond_without bootstrap
+%bcond_with bootstrap
 
 Name:           objectweb-asm
 Version:        9.1
@@ -77,6 +77,7 @@ done
 %changelog
 * Mon May 17 2021 Mikolaj Izdebski <mizdebsk@redhat.com> - 9.1-2
 - Bootstrap build
+- Non-bootstrap build
 
 * Fri May 14 2021 Marian Koncek <mkoncek@redhat.com> - 9.1-1
 - Update to upstream version 9.1
