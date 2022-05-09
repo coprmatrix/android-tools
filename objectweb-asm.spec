@@ -1,8 +1,8 @@
 %bcond_with bootstrap
 
 Name:           objectweb-asm
-Version:        9.2
-Release:        3%{?dist}
+Version:        9.3
+Release:        1%{?dist}
 Summary:        Java bytecode manipulation and analysis framework
 License:        BSD
 URL:            https://asm.ow2.org/
@@ -75,6 +75,9 @@ done
 %license LICENSE.txt
 
 %changelog
+* Mon May 09 2022 Mikolaj Izdebski <mizdebsk@redhat.com> - 9.3-1
+- Update to upstream version 9.3
+
 * Sat Feb 05 2022 Jiri Vanek <jvanek@redhat.com> - 9.2-3
 - Rebuilt for java-17-openjdk as system jdk
 
