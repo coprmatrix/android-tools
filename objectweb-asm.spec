@@ -7,6 +7,7 @@ Summary:        Java bytecode manipulation and analysis framework
 License:        BSD
 URL:            https://asm.ow2.org/
 BuildArch:      noarch
+ExclusiveArch:  %{java_arches} noarch
 
 # ./generate-tarball.sh
 Source0:        %{name}-%{version}.tar.gz
