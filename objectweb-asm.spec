@@ -21,9 +21,10 @@ Source7:        https://repo1.maven.org/maven2/org/ow2/asm/asm-util/%{version}/a
 # The source contains binary jars that cannot be verified for licensing and could be proprietary
 Source9:        generate-tarball.sh
 
-BuildRequires:  maven-local
 %if %{with bootstrap}
 BuildRequires:  javapackages-bootstrap
+%else
+BuildRequires:  maven-local
 %endif
 
 # Explicit javapackages-tools requires since asm-processor script uses
