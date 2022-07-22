@@ -2,7 +2,7 @@
 
 Name:           objectweb-asm
 Version:        9.3
-Release:        2%{?dist}
+Release:        3%{?dist}
 Summary:        Java bytecode manipulation and analysis framework
 License:        BSD
 URL:            https://asm.ow2.org/
@@ -20,11 +20,21 @@ Source6:        https://repo1.maven.org/maven2/org/ow2/asm/asm-tree/%{version}/a
 Source7:        https://repo1.maven.org/maven2/org/ow2/asm/asm-util/%{version}/asm-util-%{version}.pom
 # The source contains binary jars that cannot be verified for licensing and could be proprietary
 Source9:        generate-tarball.sh
+Source10:       tools-retrofitter.pom
+
+# This patch makes it possible to generate module-info.class files without
+# needing to use bnd-maven-plugin during the build. The replacement is an added
+# main method that has to be invoked manually.
+# Patch already applied in upstream master
+# https://gitlab.ow2.org/asm/asm/-/commit/5921eb2a141f0dcc83c6a5d7dcd5035a30c5edfc
+Patch1:         0001-Generate-the-module-info-classes-without-Bnd.-Delete.patch
 
 %if %{with bootstrap}
 BuildRequires:  javapackages-bootstrap
 %else
 BuildRequires:  maven-local
+BuildRequires:  mvn(org.apache.maven.plugins:maven-antrun-plugin)
+BuildRequires:  mvn(org.ow2.asm:asm)
 %endif
 
 # Explicit javapackages-tools requires since asm-processor script uses
@@ -47,19 +57,27 @@ This package provides %{summary}.
 %prep
 %setup -q
 
+%patch1 -p1
+
 # A custom parent pom to aggregate the build
 cp -p %{SOURCE1} pom.xml
+%pom_xpath_set pom:project/pom:version %{version}
+
+cp -p %{SOURCE10} tools/retrofitter/pom.xml
 
 # Insert poms into modules
 for pom in asm asm-analysis asm-commons asm-test asm-tree asm-util; do
-  cp -p $RPM_SOURCE_DIR/${pom}-%{version}.pom $pom/pom.xml
-  %pom_remove_parent $pom
+  cp -p ${RPM_SOURCE_DIR}/${pom}-%{version}.pom ${pom}/pom.xml
+  %pom_add_dep org.ow2.asm:tools-retrofitter::provided ${pom}
+  %pom_add_plugin org.apache.maven.plugins:maven-antrun-plugin ${pom}
+  %pom_set_parent org.ow2.asm:asm-aggregator:%{version} ${pom}
+  %pom_xpath_inject pom:parent '<relativePath>..</relativePath>' ${pom}
 done
 
-# No need to ship the custom parent pom
-%mvn_package :asm-aggregator __noinstall
 # Don't ship the test framework to avoid runtime dep on junit
 %mvn_package :asm-test __noinstall
+
+%mvn_package :tools-retrofitter __noinstall
 
 %build
 %mvn_build -f -- -Dmaven.compiler.source=1.8 -Dmaven.compiler.target=1.8
@@ -77,6 +95,10 @@ done
 %license LICENSE.txt
 
 %changelog
+* Mon Aug 29 2022 Marian Koncek <mkoncek@redhat.com> - 9.3-3
+- Generate module-info without bnd-plugin
+- Resolves: rhbz#2106272
+
 * Fri Jul 22 2022 Fedora Release Engineering <releng@fedoraproject.org> - 9.3-2
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_37_Mass_Rebuild
 
