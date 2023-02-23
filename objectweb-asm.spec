@@ -11,7 +11,7 @@ ExclusiveArch:  %{java_arches} noarch
 
 # ./generate-tarball.sh
 Source0:        %{name}-%{version}.tar.gz
-Source1:        parent.pom
+Source1:        aggregator.pom
 Source2:        https://repo1.maven.org/maven2/org/ow2/asm/asm/%{version}/asm-%{version}.pom
 Source3:        https://repo1.maven.org/maven2/org/ow2/asm/asm-analysis/%{version}/asm-analysis-%{version}.pom
 Source4:        https://repo1.maven.org/maven2/org/ow2/asm/asm-commons/%{version}/asm-commons-%{version}.pom
@@ -63,25 +63,26 @@ This package provides %{summary}.
 %patch1 -p1
 %patch2 -p1
 
-# A custom parent pom to aggregate the build
+# A custom pom to aggregate the build
 cp -p %{SOURCE1} pom.xml
-%pom_xpath_set pom:project/pom:version %{version}
 
 cp -p %{SOURCE10} tools/retrofitter/pom.xml
 
 # Insert poms into modules
 for pom in asm asm-analysis asm-commons asm-test asm-tree asm-util; do
   cp -p ${RPM_SOURCE_DIR}/${pom}-%{version}.pom ${pom}/pom.xml
-  %pom_add_dep org.ow2.asm:tools-retrofitter::provided ${pom}
+  %pom_add_dep org.fedoraproject.xmvn.objectweb-asm:tools-retrofitter::provided ${pom}
   %pom_add_plugin org.apache.maven.plugins:maven-antrun-plugin ${pom}
-  %pom_set_parent org.ow2.asm:asm-aggregator:%{version} ${pom}
+  %pom_set_parent org.fedoraproject.xmvn.objectweb-asm:aggregator:any ${pom}
   %pom_xpath_inject pom:parent '<relativePath>..</relativePath>' ${pom}
 done
 
+# Don't ship poms used for build only
+%mvn_package :aggregator __noinstall
+%mvn_package :tools-retrofitter __noinstall
+
 # Don't ship the test framework to avoid runtime dep on junit
 %mvn_package :asm-test __noinstall
-
-%mvn_package :tools-retrofitter __noinstall
 
 %build
 %mvn_build -f -- -Dmaven.compiler.source=1.8 -Dmaven.compiler.target=1.8
