@@ -1,8 +1,8 @@
 %bcond_with bootstrap
 
 Name:           objectweb-asm
-Version:        9.3
-Release:        5%{?dist}
+Version:        9.4
+Release:        1%{?dist}
 Summary:        Java bytecode manipulation and analysis framework
 License:        BSD
 URL:            https://asm.ow2.org/
@@ -21,16 +21,6 @@ Source7:        https://repo1.maven.org/maven2/org/ow2/asm/asm-util/%{version}/a
 # The source contains binary jars that cannot be verified for licensing and could be proprietary
 Source9:        generate-tarball.sh
 Source10:       tools-retrofitter.pom
-
-# This patch makes it possible to generate module-info.class files without
-# needing to use bnd-maven-plugin during the build. The replacement is an added
-# main method that has to be invoked manually.
-# Patch already applied in upstream master
-# https://gitlab.ow2.org/asm/asm/-/commit/5921eb2a141f0dcc83c6a5d7dcd5035a30c5edfc
-Patch1:         0001-Generate-the-module-info-classes-without-Bnd.-Delete.patch
-
-# Attempted fix for: https://gitlab.ow2.org/asm/asm/-/issues/317983
-Patch2:         0002-Replace-slash-for-dot-in-generated-module-infos.patch
 
 %if %{with bootstrap}
 BuildRequires:  javapackages-bootstrap
@@ -59,9 +49,6 @@ This package provides %{summary}.
 
 %prep
 %setup -q
-
-%patch1 -p1
-%patch2 -p1
 
 # A custom pom to aggregate the build
 cp -p %{SOURCE1} pom.xml
@@ -100,6 +87,9 @@ done
 %license LICENSE.txt
 
 %changelog
+* Thu Feb 23 2023 Marian Koncek <mkoncek@redhat.com> - 9.4-1
+- Update to upstream version 9.4
+
 * Thu Jan 19 2023 Fedora Release Engineering <releng@fedoraproject.org> - 9.3-5
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_38_Mass_Rebuild
 
