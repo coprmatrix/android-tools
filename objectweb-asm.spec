@@ -48,7 +48,7 @@ Summary:        API documentation for %{name}
 This package provides %{summary}.
 
 %prep
-%setup -q
+%autosetup -p1 -C
 
 # A custom pom to aggregate the build
 cp -p %{SOURCE1} pom.xml
