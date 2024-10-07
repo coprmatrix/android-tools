@@ -1,7 +1,7 @@
 %bcond_with bootstrap
 
 Name:           objectweb-asm
-Version:        9.7
+Version:        9.7.1
 Release:        %autorelease
 Summary:        Java bytecode manipulation and analysis framework
 License:        BSD-3-Clause
