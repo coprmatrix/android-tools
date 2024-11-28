@@ -30,10 +30,6 @@ BuildRequires:  mvn(org.apache.maven.plugins:maven-antrun-plugin)
 BuildRequires:  mvn(org.ow2.asm:asm)
 %endif
 
-# Explicit javapackages-tools requires since asm-processor script uses
-# /usr/share/java-utils/java-functions
-Requires:       javapackages-tools
-
 %description
 ASM is an all purpose Java bytecode manipulation and analysis
 framework.  It can be used to modify existing classes or dynamically
