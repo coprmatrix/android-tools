@@ -1,10 +1,17 @@
 <services>
-	<service name="obs_scm" mode="default">
+	<service name="obs_scm">
 		<param name="scm">git</param>
 		<param name="url">https://src.fedoraproject.org/rpms/objectweb-asm.git</param>
 		<param name="revision">rawhide</param>
 		<param name="without-version">enable</param>
 		<param name="extract">*</param>
 	</service>
-	<service name="download_files" mode="default" />
+	<service name="download_files"/>
+	<service name="run">
+		<param name="command">source *generate-tarball.sh</param>
+	</service>
+	<service name="perl_regex" mode="buildtime">
+		<param name="regex">s/%bcond_with\s+bootstrap/%bcond_without\sbootstrap/g;</param>
+		<param name="file">objectweb-asm.spec</param>
+	</service>
 </services>
