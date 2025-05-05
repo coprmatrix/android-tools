@@ -2,6 +2,7 @@
 /.project
 /.build-*.log
 /*.src.rpm
+.osc.temp
 /noarch
 /objectweb-asm-*.tar.gz
 /objectweb-asm-*/
