@@ -1,8 +1,9 @@
+name="objectweb-asm"
 cd "${outdir:-.}"
-git clone https://src.fedoraproject.org/rpms/objectweb-asm.git
-pushd objectweb-asm
-sed -i 's/%bcond_with\s+bootstrap/%bcond_without\sbootstrap/' objectweb-asm.spec
+git clone https://src.fedoraproject.org/rpms/"$name".git
+pushd "$name"
+sed -i 's/%bcond_with bootstrap/%bcond_without bootstrap/' "$name".spec
 bash -x generate-tarball.sh
 popd
-mv objectweb-asm/* ./
+mv "$name"/* ./
 
