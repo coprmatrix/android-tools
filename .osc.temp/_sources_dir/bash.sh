@@ -1,8 +1,8 @@
-name="objectweb-asm"
+name="android-tools"
 cd "${outdir:-.}"
 git clone https://src.fedoraproject.org/rpms/"$name".git
 pushd "$name"
-sed -i 's/%bcond_with bootstrap/%bcond_without bootstrap/' "$name".spec
+sed -i '3i BuildRequires: zlib-ng-compat-devel' "$name".spec
 bash -x generate-tarball.sh
 popd
 mv "$name"/* ./
